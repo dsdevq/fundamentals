@@ -216,3 +216,27 @@ def test_loader_error_propagates_to_waiters_and_is_not_cached():
     with pytest.raises(RuntimeError):
         cache.get_or_load("k", boom)
     assert cache.get_or_load("k", lambda k: 7) == 7  # next caller retries
+
+
+def test_single_flight_rechecks_cache_when_leader_finished_after_our_miss():
+    class StaleFirstLookup(LRUCache[str, int]):
+        def __init__(self) -> None:
+            super().__init__(2)
+            self._stale = True
+
+        def get(self, key, default=None):
+            if self._stale:
+                self._stale = False
+                return default
+            return super().get(key, default)
+
+    cache = StaleFirstLookup()
+    cache.put("k", 1)
+    calls: list[str] = []
+
+    def loader(key: str) -> int:
+        calls.append(key)
+        return 2
+
+    assert cache.get_or_load("k", loader) == 1
+    assert calls == []

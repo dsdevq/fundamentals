@@ -57,7 +57,7 @@ def outage(policy: FailPolicy) -> None:
 
 
 def herd() -> None:
-    """1000 clients rejected at t=0 all retry exactly when the bucket refills at t=1."""
+    """1000 clients rejected at t=0 all retry exactly when the bucket refills at t=0.1."""
     clock = ManualClock()
     bucket = TokenBucket(10, 10, clock=clock)
     for _ in range(10):

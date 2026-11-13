@@ -130,6 +130,10 @@ class LRUCache[K: Hashable, V]:
             flight = self._inflight.get(key)
             leader = flight is None
             if leader:
+                entry = self._data.get(key)
+                if entry is not None and not self._is_expired(entry[1]):
+                    self._touch(key)
+                    return entry[0]
                 flight = self._inflight[key] = _Flight()
         if not leader:
             flight.done.wait()
