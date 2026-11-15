@@ -19,3 +19,21 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest
+  exercises:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: exercises
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run exercises tests (only when they exist)
+        run: |
+          if ls tests/test_*.py >/dev/null 2>&1; then
+            pip install pytest
+            pytest
+          else
+            echo "no exercises tests yet"
+          fi
